@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HabrCareerDateTimeParserTest {
 
     @Test
-    void whenCorrectParcingManually() {
+    void whenCorrectParsingManually() {
         HabrCareerDateTimeParser parser = new HabrCareerDateTimeParser();
         LocalDateTime result = parser.parse("2023-12-20T10:15:30+03:00");
         LocalDateTime expected = LocalDateTime.parse("2023-12-20T10:15:30");

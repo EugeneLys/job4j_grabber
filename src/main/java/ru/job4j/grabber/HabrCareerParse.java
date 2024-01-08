@@ -16,6 +16,13 @@ public class HabrCareerParse {
 
     private static final String SUFFIX = "&q=Java%20developer&type=all";
 
+    private static String retrieveDescription(String link) throws IOException {
+        Connection connection = Jsoup.connect(link);
+        Document document = connection.get();
+        Elements result = document.select(".faded-content__container");
+        return result.text();
+    }
+
     public static void main(String[] args) throws IOException {
         int pageNumber = 1;
         while (pageNumber < 6) {
@@ -30,6 +37,11 @@ public class HabrCareerParse {
                 String vacancyName = titleElement.text();
                 String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
                 System.out.printf("%s %s %s%n", vacancyName, link, date);
+                try {
+                    System.out.println(retrieveDescription(link));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
             pageNumber++;
         }

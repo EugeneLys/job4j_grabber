@@ -5,16 +5,27 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+import ru.job4j.grabber.utils.DateTimeParser;
+import ru.job4j.grabber.utils.HabrCareerDateTimeParser;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class HabrCareerParse {
+public class HabrCareerParse implements Parse {
 
     private static final String SOURCE_LINK = "https://career.habr.com";
 
     private static final String PREFIX = "/vacancies?page=";
 
     private static final String SUFFIX = "&q=Java%20developer&type=all";
+
+    private final DateTimeParser dateTimeParser;
+
+    private int id;
+
+    public HabrCareerParse(DateTimeParser dateTimeParser) {
+        this.dateTimeParser = dateTimeParser;
+    }
 
     private static String retrieveDescription(String link) throws IOException {
         Connection connection = Jsoup.connect(link);
@@ -23,7 +34,9 @@ public class HabrCareerParse {
         return result.text();
     }
 
-    public static void main(String[] args) throws IOException {
+    @Override
+    public List<Post> list(String link) throws IOException {
+        List<Post> list = new ArrayList<>();
         int pageNumber = 1;
         while (pageNumber < 6) {
             String fullLink = "%s%s%d%s".formatted(SOURCE_LINK, PREFIX, pageNumber, SUFFIX);
@@ -35,15 +48,20 @@ public class HabrCareerParse {
                 Element linkElement = titleElement.child(0);
                 String date = row.select("time.basic-date").attr("datetime");
                 String vacancyName = titleElement.text();
-                String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-                System.out.printf("%s %s %s%n", vacancyName, link, date);
+                String vacancyLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+                String description = null;
                 try {
-                    System.out.println(retrieveDescription(link));
+                    description = retrieveDescription(vacancyLink);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                id++;
+                Post post = new Post(id, vacancyName, vacancyLink,
+                        description, new HabrCareerDateTimeParser().parse(date));
+                list.add(post);
             });
             pageNumber++;
         }
+        return list;
     }
 }

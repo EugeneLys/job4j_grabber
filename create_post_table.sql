@@ -1,7 +1,7 @@
 create database agregator;
 
 create table post (
-	id serial primary key unique,
+	id serial primary key,
 	name varchar(255), 
 	text text, 
 	link text unique,

@@ -35,7 +35,7 @@ public class PsqlStore implements Store {
     @Override
     public void save(Post post) {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO post "
-                + "(id, name, text, link, created) VALUES (?, ?, ?, ?, ?)")) {
+                + "(id, name, text, link, created) VALUES (?, ?, ?, ?, ?) ON CONFLICT (link) DO NOTHING")) {
             statement.setInt(1, post.getId());
             statement.setString(2, post.getTitle());
             statement.setString(3, post.getDescription());
@@ -87,20 +87,5 @@ public class PsqlStore implements Store {
         if (connection != null) {
             connection.close();
         }
-    }
-
-    public static void main(String[] args) throws SQLException {
-        Properties config = new Properties();
-        try {
-            config.load(new FileInputStream("src/main/resources/aggregator.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        PsqlStore store = new PsqlStore(config);
-        Post post1 = new Post(1, "Java developer", null,
-                "Best work in the world", LocalDateTime.now());
-        store.save(post1);
-        System.out.println(store.findById(1));
-        System.out.println(store.getAll());
     }
 }

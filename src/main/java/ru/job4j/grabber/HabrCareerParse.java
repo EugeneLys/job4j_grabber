@@ -35,7 +35,7 @@ public class HabrCareerParse implements Parse {
     }
 
     @Override
-    public List<Post> list(String link) throws IOException {
+    public List<Post> list() throws IOException {
         List<Post> list = new ArrayList<>();
         int pageNumber = 1;
         while (pageNumber < 6) {

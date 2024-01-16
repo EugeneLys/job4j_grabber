@@ -5,6 +5,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import ru.job4j.grabber.utils.HabrCareerDateTimeParser;
 
 import java.io.*;
+import java.util.List;
 import java.util.Properties;
 
 import static org.quartz.JobBuilder.newJob;
@@ -48,28 +49,26 @@ public class Grabber implements Grab {
             JobDataMap map = context.getJobDetail().getJobDataMap();
             Store store = (Store) map.get("store");
             Parse parse = (Parse) map.get("parse");
-            String link = "";
             try {
-                parse.list(link).forEach(store::save);
+                parse.list().forEach(store::save);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            /* TODO impl logic */
         }
     }
 
 
-    public static void main(String[] args) throws Exception {
-        var config = new Properties();
-        try (InputStream input = Grabber.class.getClassLoader()
-                .getResourceAsStream("app.properties")) {
-            config.load(input);
+        public static void main(String[] args) throws Exception {
+            var config = new Properties();
+            try (InputStream input = Grabber.class.getClassLoader()
+                    .getResourceAsStream("app.properties")) {
+                config.load(input);
+            }
+            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+            scheduler.start();
+            var parse = new HabrCareerParse(new HabrCareerDateTimeParser());
+            var store = new PsqlStore(config);
+            var time = Integer.parseInt(config.getProperty("time"));
+            new Grabber(parse, store, scheduler, time).init();
         }
-        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
-        scheduler.start();
-        var parse = new HabrCareerParse(new HabrCareerDateTimeParser());
-        var store = new PsqlStore(config);
-        var time = Integer.parseInt(config.getProperty("time"));
-        new Grabber(parse, store, scheduler, time).init();
     }
-}
